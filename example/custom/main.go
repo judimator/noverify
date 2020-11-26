@@ -20,6 +20,12 @@ func init() {
 		Default: true,
 		Comment: "Report not-strict-enough comparisons.",
 	})
+
+	linter.DeclareCheck(linter.CheckInfo{
+		Name:    "singleStringQuote",
+		Default: true,
+		Comment: "Report double-quoted string.",
+	})
 }
 
 var customFlag = flag.String("custom-flag", "", "An example of the additional linter flag")
@@ -55,6 +61,8 @@ func isString(ctx *linter.BlockContext, n ir.Node) bool {
 
 func (b *block) BeforeEnterNode(n ir.Node) {
 	switch n := n.(type) {
+	case *ir.String:
+		b.handleString(n)
 	case *ir.FunctionCallExpr:
 		b.handleFunctionCall(n)
 	case *ir.EqualExpr:
@@ -77,6 +85,12 @@ func (b *block) handleFunctionCall(e *ir.FunctionCallExpr) {
 	if nm.Value == `in_array` {
 		b.handleInArrayCall(e)
 		return
+	}
+}
+
+func (b *block) handleString(e *ir.String) {
+	if e.DoubleQuotes {
+		b.ctx.Report(e, linter.LevelSyntax, "singleStringQuote", "Strings must be declared using ''")
 	}
 }
 
