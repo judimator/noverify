@@ -541,6 +541,15 @@ $foo = new Foo();`,
 		},
 
 		{
+			Name:     "CamelCaseVar",
+			Default:  true,
+			Quickfix: true,
+			Comment:  `Please, use camel case naming`,
+			Before:   `$some_var`,
+			After:    `$someVar`,
+		},
+
+		{
 			Name:     "printf",
 			Default:  true,
 			Quickfix: false,

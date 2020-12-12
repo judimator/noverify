@@ -2,6 +2,7 @@ package linter
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/VKCOM/noverify/src/ir"
@@ -1565,6 +1566,14 @@ func (b *BlockWalker) paramClobberCheck(v *ir.SimpleVar) {
 	}
 }
 
+func (b *BlockWalker) checkCamelCase(v *ir.SimpleVar) {
+	if ok, _ := regexp.MatchString("^[a-z]+(?:[0-9]?[A-Z]?[a-z]?)*$", v.Name); ok {
+		return
+	}
+
+	b.r.Report(v, LevelWarning, "CamelCaseVar", "Please, use camel case naming")
+}
+
 func (b *BlockWalker) handleAssign(a *ir.Assign) bool {
 	a.Expression.Walk(b)
 
@@ -1575,6 +1584,7 @@ func (b *BlockWalker) handleAssign(a *ir.Assign) bool {
 		return false
 	case *ir.SimpleVar:
 		b.paramClobberCheck(v)
+		b.checkCamelCase(v)
 		b.replaceVar(v, solver.ExprTypeLocal(b.ctx.sc, b.r.ctx.st, a.Expression), "assign", meta.VarAlwaysDefined)
 	case *ir.Var:
 		b.replaceVar(v, solver.ExprTypeLocal(b.ctx.sc, b.r.ctx.st, a.Expression), "assign", meta.VarAlwaysDefined)
